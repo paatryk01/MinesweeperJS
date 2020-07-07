@@ -1,11 +1,10 @@
 <template>
-  <div id="game">
-        <button class="newGame" @click="prepareNewGame">New game</button>
-        <h3 v-if="isGameOver">Game Over</h3>
-        <h3 v-else>Good Luck</h3>
+    <div id="game">
+        <button class="newGame">New game</button>
+        <h3 id='msg'>Good Luck</h3>
         <p>Bombs: {{ bombAmount }}</p>
         <div class="grid"></div>
-  </div>
+    </div>
 </template>
 
 <script>
@@ -24,6 +23,15 @@ export default {
         }
     }, 
     methods: {
+        gameOver() {
+            this.isGameOver = true;
+
+            this.squares.forEach((square) => {
+                if(square.classList.contains('bomb')) {
+                    square.innerHTML = '💣';
+                }
+            })
+        },
         prepareNewGame() { 
             const grid = document.querySelector('.grid');
 
@@ -40,11 +48,18 @@ export default {
                 this.squares.push(square);
 
                 square.addEventListener('click', function() {
-                    // this.click(square);
+
                     if(this.isGameOver) return;
                     if(square.classList.contains('checked') || square.classList.contains('flag')) return;
                     if(square.classList.contains('bomb')) {
-                        this.gameOver(square);
+                        this.isGameOver = true;
+
+                        let msg = document.querySelector('#msg');
+                        msg.innerText = 'Game Over';
+
+                        // square.innerHTML = '💣';
+                        
+                        this.gameOver();
                     } else {
                         let total = square.getAttribute('data');
 
@@ -58,31 +73,12 @@ export default {
                     square.classList.add('checked');
                 })
 
-                // square.oncontextmenu = function(e) {
-                //     e.preventDefault();
-                //     this.addFlag(square);
-                // }
+                square.oncontextmenu = function(e) {
+                    e.preventDefault();
+                    this.addFlag(square);
+                }
             }
         },
-        // click(square) {
-            // let currentId = square.id;
-            // console.log(`you clicked ${square.id}`)
-            // if(this.isGameOver) return;
-            // if(square.classList.contains('checked') || square.classList.contains('flag')) return;
-            // if(square.classList.contains('bomb')) {
-            //     this.gameOver(square);
-            // } else {
-            //     let total = square.getAttribute('data');
-
-            //     if(total != 0) { 
-            //         square.classList.add('checked');
-            //         square.innerHTML = total;
-            //         return
-            //     }
-            //     // checkSquare(square, currentId);
-            // }
-            // square.classList.add('checked');
-        
         addFlag(square) {
             if(this.isGameOver) return;
             if(!square.classList.contains('checked') && (this.flaga < this.bombAmount)) {
@@ -116,15 +112,6 @@ export default {
                     this.squares[i].setAttribute('data', total);
                 }
             }
-        },
-        gameOver() {
-            this.isGameOver = true;
-
-            this.squares.forEach((square) => {
-                if(square.classList.contains('bomb')) {
-                    square.innerHTML = '💣';
-                }
-            })
         }
     },
     mounted() {
@@ -163,5 +150,8 @@ export default {
     .checked {
         background-color: green;
         color: black;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 </style>
