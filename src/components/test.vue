@@ -1,6 +1,6 @@
 <template>
     <div id="game">
-        <!-- <button class="newGame">New game</button> -->
+        <button class="newGame">New game</button>
         <h3 id='msg'>Good Luck</h3>
         <p>Bombs: {{ bombAmount }}</p>
         <div class="grid"></div>
@@ -8,33 +8,29 @@
 </template>
 
 <script>
-
 export default {
-
     name: 'Game',
+    props: {
 
+    },
     data() {
         return {
             width: 10,
             bombAmount: 20,
             flags: 0,
             squares: [],
-            isGameOver: false
+            isGameOver: false,
         }
-    },
-
+    }, 
     methods: {
-
-        prepareNewGame() {
-
+        prepareNewGame() { 
             const grid = document.querySelector('.grid');
 
             const bombsArray = Array(this.bombAmount).fill('bomb');
             const emptyArray = Array(this.width * this.width - this.bombAmount).fill('empty');
             const gameArray = emptyArray.concat(bombsArray);
-            const shuffledArray = gameArray.sort(() => Math.random() - 0.5);
-            
-                
+            const shuffledArray = gameArray.sort(() => Math.random() -0.5);
+
             for(let i = 0; i < this.width * this.width; i++) {
 
                 const square = document.createElement('div');
@@ -42,77 +38,59 @@ export default {
                 square.classList.add(shuffledArray[i]);
                 grid.appendChild(square);
                 this.squares.push(square);
-                let squaresArr = this.squares;
-                let msg = document.querySelector('#msg');
 
                 square.addEventListener('click', function() {
 
-                    let currentId = square.id;
                     if(this.isGameOver) return;
                     if(square.classList.contains('checked') || square.classList.contains('flag')) return;
                     if(square.classList.contains('bomb')) {
-                        
-                        // this.gameOver();
-                        
                         this.isGameOver = true;
-                        msg.innerText = 'GAME OVER';
 
-                        squaresArr.forEach((square) => {
-                            
-                            if(square.classList.contains('bomb')) {
-                                square.innerHTML = '💣';
-                            }
-                        });
+                        let msg = document.querySelector('#msg');
+                        msg.innerText = 'Game Over';
 
-                    } else {
+                        // square.innerHTML = '💣';
                         
+                        this.gameOver();
+                    } else {
                         let total = square.getAttribute('data');
 
-                        if(total != 0) {
-
+                        if(total != 0) { 
                             square.classList.add('checked');
                             square.innerHTML = total;
-                            return;
-
+                            return
                         }
                     }
-
                     square.classList.add('checked');
                 })
 
                 square.oncontextmenu = function(e) {
-                    
                     e.preventDefault();
-                    
-                    if(this.isGameOver) return;
-                    if(!square.classList.contains('checked') && (this.flags < this.bombAmount)) {
-
-                        if(!square.classList.contains('flag')) {
-                            
-                            square.classList.add('flag');
-                            square.innerHTML = '🚩';
-                            this.flags++;
-                        } else {
-
-                            square.classList.remove('flag');
-                            square.innerHTML = '';
-                            this.flags--;
-                        }
-                    }
+                    this.addFlag(square);
                 }
             }
         },
-
+        addFlag(square) {
+            if(this.isGameOver) return;
+            if(!square.classList.contains('checked') && (this.flags < this.bombAmount)) {
+                if(!square.classList.contains('flag')) {
+                    square.classList.add('flag');
+                    square.innerHTML = '🚩';
+                    this.flags++
+                } else {
+                    square.classList.remove('flag');
+                    square.innerHTML = '';
+                    this.flags--;
+                }
+            }
+        },
         addNumbers() {
-
-            for(let i = 0; i < this.squares.length; i++) {
-                
+            for(let i = 0; i < this.squares.length; i++) { 
                 let total = 0;
                 const isLeftEdge = (i % this.width === 0);
                 const isRightEdge = (i % this.width === this.width - 1);
 
                 if(this.squares[i].classList.contains('empty')) {
-
                     if(i > 0 && !isLeftEdge && this.squares[i - 1].classList.contains('bomb')) total++;
                     if(i > 9 && !isRightEdge && this.squares[i + 1 - this.width].classList.contains('bomb')) total ++;
                     if(i > 9 && this.squares[i - this.width].classList.contains('bomb')) total++;
@@ -121,69 +99,41 @@ export default {
                     if(i < 90 && !isLeftEdge && this.squares[i - 1 + this.width].classList.contains('bomb')) total ++;
                     if(i < 88 && !isRightEdge && this.squares[i + 1 + this.width].classList.contains('bomb')) total ++;
                     if(i < 90 && this.squares[i + this.width].classList.contains('bomb')) total++;
-
+                    
                     this.squares[i].setAttribute('data', total);
                 }
             }
         },
+        gameOver() {
+            this.isGameOver = true;
 
-        addFlag(square) {
+            // for(let i = 0; i < this.squares.length; i++){
+            //     if(squares[i].classList.contains('bomb')) {
+            //         squares[i].innerHTML = '💣'
+            //     }
+            // }
 
-            if(this.isGameOver) return;
-            if(!square.classList.contains('checked') && (this.flags < this.bombAmount)) {
-
-                if(!square.classList.contains('flag')) {
-
-                    square.classList.add('flag');
-                    square.innerHTML = '🚩';
-                    this.flags++;
-                } else {
-
-                    square.classList.remove('flag');
-                    square.innerHTML = '';
-                    this.flags--;
+            this.squares.forEach((square) => {
+                if(square.classList.contains('bomb')) {
+                    square.innerHTML = '💣';
                 }
-            }
-
-        },
-
-        checkSquare(square, currentId) {
-
-            const isLeftEdge = (currentId % width === 0);
-            const isRightEdge = (currentId % width === width - 1);
-
-            setTimeout(() => {
-                
-            }, 10);
-
+            })
         }
-
-        // gameOver() {
-            
-        //     this.isGameOver = true;
-
-        //     this.squares.forEach((square) => {
-                
-        //         if(square.classList.contains('bomb')) {
-        //             square.innerHTML = '💣';
-        //         }
-        //     })
-        // }
     },
-
     mounted() {
-
         this.prepareNewGame();
         this.addNumbers();
-
     }
-
 }
-
 </script>
 
+
 <style>
- 
+
+    .done {
+        background-color: cyan;
+    }
+    
     .grid {
         height: 400px;
         width: 400px;
@@ -201,9 +151,6 @@ export default {
 
     .bomb {
         background-color: red;
-        display: flex;
-        justify-content: center;
-        align-items: center;
     }
 
     .checked {
@@ -213,11 +160,4 @@ export default {
         justify-content: center;
         align-items: center;
     }
-
-    .flag {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
 </style>
